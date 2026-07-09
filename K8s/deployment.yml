@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: django-app
+  namespace: default
+
+spec:
+  replicas: 1
+
+  selector:
+    matchLabels:
+      app: django-app
+
+  template:
+    metadata:
+      labels:
+        app: django-app
+
+    spec:
+      containers:
+        - name: django-app
+          image: 724412576398.dkr.ecr.us-east-1.amazonaws.com/python-ingress-application:latest
+
+          ports:
+            - containerPort: 8000
