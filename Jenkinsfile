@@ -24,16 +24,22 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
+       stage('Install Dependencies') {
             steps {
                 dir('test_django_pro') {
                     sh '''
                         apt-get update
-                        apt-get install -y docker.io curl unzip docker-buildx-plugin
+                        apt-get install -y docker.io curl unzip
 
+                        # Install AWS CLI v2
                         curl -s "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
                         unzip -q awscliv2.zip
                         ./aws/install
+
+                        # Install buildx manually
+                        mkdir -p ~/.docker/cli-plugins
+                        curl -sSL https://github.com/docker/buildx/releases/download/v0.17.1/buildx-v0.17.1.linux-amd64 -o ~/.docker/cli-plugins/docker-buildx
+                        chmod +x ~/.docker/cli-plugins/docker-buildx
 
                         pip install --upgrade pip
                         pip install -r requirements.txt
@@ -92,18 +98,11 @@ pipeline {
             }
         }
 
-        stage('Build Docker Image') {
+       stage('Build Docker Image') {
             steps {
                 dir('test_django_pro') {
                     sh '''
-                        docker buildx create --use --name multiarch-builder || docker buildx use multiarch-builder
-
-                        docker buildx build \
-                          --platform linux/amd64 \
-                          -t $ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG \
-                          -t $ECR_REGISTRY/$ECR_REPO:latest \
-                          --load \
-                          .
+                        docker build -t $ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPO:latest .
                     '''
                 }
             }
