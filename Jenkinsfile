@@ -7,7 +7,7 @@ pipeline {
     }
 
     environment {
-        SONAR_HOST_URL = 'http://32.236.85.107:9000'
+        SONAR_HOST_URL = 'http://13.211.134.226:9000'
         AWS_REGION     = 'us-east-1'
         AWS_ACCOUNT_ID = '724412576398'
         ECR_REPO       = 'python-ingress-application'
