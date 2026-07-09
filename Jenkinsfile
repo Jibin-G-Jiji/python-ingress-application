@@ -24,24 +24,6 @@ pipeline {
             }
         }
 
-        stage('Debug - Verify Structure') {
-            steps {
-                sh '''
-                    echo "----- Repo root contents -----"
-                    ls -la
-
-                    echo "----- Searching for settings.py -----"
-                    find . -name "settings.py"
-
-                    echo "----- Searching for manage.py -----"
-                    find . -name "manage.py"
-
-                    echo "----- Git tracked files -----"
-                    git ls-files
-                '''
-            }
-        }
-
         stage('Install Dependencies') {
             steps {
                 sh '''
