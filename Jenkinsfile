@@ -24,50 +24,40 @@ pipeline {
             }
         }
 
-       stage('Install Dependencies') {
+        stage('Install Dependencies') {
             steps {
-                dir('test_django_pro') {
-                    sh '''
-                        apt-get update
-                        apt-get install -y docker.io curl unzip
+                sh '''
+                    apt-get update
+                    apt-get install -y docker.io curl unzip
 
-                        # Install AWS CLI v2
-                        curl -s "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-                        unzip -q awscliv2.zip
-                        ./aws/install
+                    curl -s "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+                    unzip -q awscliv2.zip
+                    ./aws/install
 
-                        # Install buildx manually
-                        mkdir -p ~/.docker/cli-plugins
-                        curl -sSL https://github.com/docker/buildx/releases/download/v0.17.1/buildx-v0.17.1.linux-amd64 -o ~/.docker/cli-plugins/docker-buildx
-                        chmod +x ~/.docker/cli-plugins/docker-buildx
-
-                        pip install --upgrade pip
-                        pip install -r requirements.txt
-                        pip install pytest pytest-django pytest-cov
-                    '''
-                }
+                    pip install --upgrade pip
+                    pip install -r requirements.txt
+                    pip install pytest pytest-django pytest-cov
+                '''
             }
         }
 
         stage('Build and Test') {
             steps {
-                dir('test_django_pro') {
-                    sh '''
-                        python manage.py makemigrations --check --dry-run
-                        python manage.py migrate
+                sh '''
+                    python manage.py makemigrations --check --dry-run
+                    python manage.py migrate
 
-                        pytest \
-                          --ds=test_django_pro.settings \
-                          --junitxml=report.xml \
-                          --cov=. \
-                          --cov-report=xml || true
-                    '''
-                }
+                    pytest \
+                      --ds=test_django_pro.settings \
+                      --junitxml=report.xml \
+                      --cov=. \
+                      --cov-report=xml || true
+                '''
             }
 
             post {
                 always {
-                    junit allowEmptyResults: true, testResults: 'test_django_pro/report.xml'
+                    junit allowEmptyResults: true, testResults: 'report.xml'
                 }
             }
         }
@@ -98,13 +88,11 @@ pipeline {
             }
         }
 
-       stage('Build Docker Image') {
+        stage('Build Docker Image') {
             steps {
-                dir('test_django_pro') {
-                    sh '''
-                        docker build -t $ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPO:latest .
-                    '''
-                }
+                sh '''
+                    docker build -t $ECR_REGISTRY/$ECR_REPO:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPO:latest .
+                '''
             }
         }
 
